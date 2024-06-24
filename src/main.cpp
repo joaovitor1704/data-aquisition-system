@@ -55,17 +55,17 @@ std::string read_sensor_data(const std::string& filename, const std::string& sen
         sensorDataString += std::to_string(n);
         for (int i = startIndex; i < sensorDataList.size(); i++) {
             sensorDataString += ";" + time_t_to_string(sensorDataList[i].timestamp) + "|" + 
-                std::to_string(sensorDataList[i].value) + "\\r\\n";
+                std::to_string(sensorDataList[i].value) + "\r\n";
         }
         file.close();
-        if(sensorDataString.size() > 1){
+        if(sensorDataList.size() > 0){
             return sensorDataString;
         }
         else {
-            return "ERROR|SENSOR_NOT_FOUND\\r\\n";
+            return "ERROR|SENSOR_NOT_FOUND\r\n";
         }
     }
-    return "";
+    return "ERROR|SENSOR_NOT_FOUND\r\n";
 }
 
 
@@ -95,17 +95,28 @@ private:
             std::istream is(&buffer_);
             std::string message(std::istreambuf_iterator<char>(is), {});
             std::cout << "Received: " << message << std::endl;
-            write_message(message);
 
-            std::vector<std::string> split_message
+            std::vector<std::string> split_message;
             std::istringstream iss(message);
             std::string element;
 
-            while(std::getline(iss, element, '|'){
+            while(std::getline(iss, element, '|')){
+              split_message.push_back(element);
+            }
+            if(split_message[0] == "LOG"){
+              sensorData sensor1;
+              strcpy(sensor1.sensor_id, split_message[1].c_str());
+              sensor1.timestamp = string_to_time_t(split_message[2]);
+              sensor1.value = std::stod(split_message[3]);
+              write_sensor_data(sensor1, "sensor_data.dat");
 
+              read_message();
             }
 
-            = split(message, "|");
+            else if(split_message[0] == "GET"){
+              std::string message = read_sensor_data("sensor_data.dat", split_message[1], std::stoi(split_message[2]));
+              write_message(message);
+            }
           }
         });
   }
@@ -158,7 +169,7 @@ private:
 
 
 int main(int argc, char* argv[]) { 
-    sensorData sensor1;
+    /*sensorData sensor1;
     strcpy(sensor1.sensor_id, "sensor7");
     time_t now = std::time(nullptr);
     sensor1.timestamp = now;
@@ -166,7 +177,7 @@ int main(int argc, char* argv[]) {
     sensor1.value = value;
     write_sensor_data(sensor1, "sensor_data.dat");
     std::string sensor = read_sensor_data("sensor_data.dat", "546hbvhh", 5);
-    std::cout << sensor;
+    std::cout << sensor;*/
 
 
     /*if (argc != 2)
