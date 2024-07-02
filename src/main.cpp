@@ -52,11 +52,12 @@ std::string read_sensor_data(const std::string& filename, const std::string& sen
         }
         
         int startIndex = std::max(0, static_cast<int>(sensorDataList.size()) - n);
-        sensorDataString += std::to_string(n);
+        sensorDataString += std::to_string(sensorDataList.size() - startIndex);
         for (int i = startIndex; i < sensorDataList.size(); i++) {
             sensorDataString += ";" + time_t_to_string(sensorDataList[i].timestamp) + "|" + 
-                std::to_string(sensorDataList[i].value) + "\r\n";
+                std::to_string(sensorDataList[i].value);
         }
+        sensorDataString += "\r\n";
         file.close();
         if(sensorDataList.size() > 0){
             return sensorDataString;
